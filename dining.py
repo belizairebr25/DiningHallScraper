@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import requests
-
+from datetime import datetime
 from parser import parse_menu
 #colors
 RED = "\033[31m"
@@ -11,10 +11,13 @@ BLUE = "\033[34m"
 BOLD = "\033[1m"
 CYAN = "\033[36m"
 MAGENTA = "\033[35m"
-RESET = "\033[0m"
+ORANGE = "\033[38;5;208m"
+BG = "\33[44m" #blue
 
+RESET = "\033[0m"
 REVERSE = "\033[7m"
 CLEAR_SCREEN = "\033[2J\033[H"
+
 #clear screen
 print(f"{CLEAR_SCREEN} Fetching Dining Services Data\n")
 BASE_URL = "https://nutritionanalysis.dds.uconn.edu/shortmenu.aspx"
@@ -49,15 +52,31 @@ HALLS = {
 }
 
 
-def fetch_menu(hall):
+def fetch_menu(hall, day, now):
+	#get datetime
+	month = now.month
+	year = now.year
+	dtdate = f"{month:02d}/{day:02d}/{year}"
+	#retreive target web page
 	info = HALLS[hall]
-
-	params = {
-		"sName": "UCONN Dining Services",
-		"locationNum": info["id"],
-		"locationName": info["name"],
-		"naFlag": 1
-	}
+	if(day == -1):
+	#today's menu
+		params = {
+			"sName": "UCONN Dining Services",
+			"locationNum": info["id"],
+			"locationName": info["name"],
+			"naFlag": 1
+		}
+	else:
+		params = {
+			"sName": "UCONN Dining Services",
+			"locationNum": info["id"],
+			"locationName": info["name"],
+			"WeeksMenus": "This Week's Menus",
+			"naFlag": 1,
+			"myaction": "read",
+			"dtdate": dtdate
+		}
 
 	response = requests.get(BASE_URL, params=params, timeout=15)
 	response.raise_for_status()
@@ -65,9 +84,10 @@ def fetch_menu(hall):
 	return parse_menu(response.text)
 
 
-def display_menu(hall, meal, menu):
-	print(f"\n{CLEAR_SCREEN}{BOLD}{MAGENTA}{HALLS[hall]['name'].upper()}{RESET}")
+def display_menu(hall, meal, menu, day, now):
+	print(f"\n{CLEAR_SCREEN}{BOLD}{REVERSE}{MAGENTA}{HALLS[hall]['name'].upper()}{RESET}")
 	print(f"{CYAN}{meal.upper()}{RESET}")
+	print(f"\n{ORANGE}{now.month}/{day}/{now.year}{RESET}")
 	print("=" * 40)
 
 	items = menu.get(meal.title(), [])
@@ -96,12 +116,15 @@ def main():
 		"meal",
 		choices=["breakfast", "lunch", "dinner"]
 	)
+	parser.add_argument("-day", "--day", type=int, default="-1", choices=range(1, 32), help="Day as Integer")
+	
 
 	args = parser.parse_args()
 
 	try:
-		menu = fetch_menu(args.hall)
-		display_menu(args.hall, args.meal, menu)
+		now = datetime.now()
+		menu = fetch_menu(args.hall, args.day, now)
+		display_menu(args.hall, args.meal, menu, args.day, now)
 		#insert space between finish and prompt
 		print("\n", "=" * 40, "\n" * 4)
 	except requests.RequestException as error:
