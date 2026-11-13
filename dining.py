@@ -87,6 +87,8 @@ def fetch_menu(hall, day, now):
 def display_menu(hall, meal, menu, day, now):
 	print(f"\n{CLEAR_SCREEN}{BOLD}{REVERSE}{MAGENTA}{HALLS[hall]['name'].upper()}{RESET}")
 	print(f"{CYAN}{meal.upper()}{RESET}")
+	if day == -1:
+		day = now.day
 	print(f"\n{ORANGE}{now.month}/{day}/{now.year}{RESET}")
 	print("=" * 40)
 
@@ -116,7 +118,7 @@ def main():
 		"meal",
 		choices=["breakfast", "lunch", "dinner"]
 	)
-	parser.add_argument("-day", "--day", type=int, default="-1", choices=range(1, 32), help="Day as Integer")
+	parser.add_argument("-day", "--day", type=int, default="-1", choices=range(1, 32), help="Day in this week: usage: -d <int>")
 	
 
 	args = parser.parse_args()
