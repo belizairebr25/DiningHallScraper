@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 
 
-def parse_menu(html):
+def parse_menu(html, veg):
     soup = BeautifulSoup(html, "html.parser")
 
     menu = {}
@@ -53,14 +53,13 @@ def parse_menu(html):
                     desc = next_row.select_one(".shortmenuproddesc")
                     if desc:
                         description = desc.get_text(" ", strip=True)
-
-            # Only include vegetarian or vegan items.
-            if not any(
-                indicator in ("vegetarian", "vegan")
-                for indicator in icons
-            ):
-                continue
-
+            if(veg):
+            	# Only include vegetarian or vegan items.
+            	if not any(
+                	indicator in ("vegetarian", "vegan")
+                	for indicator in icons
+            	):
+                	continue
             menu[current_meal].append({
                 "name": text,
                 "category": current_category,

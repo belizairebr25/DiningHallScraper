@@ -52,7 +52,7 @@ HALLS = {
 }
 
 
-def fetch_menu(hall, day, now):
+def fetch_menu(hall, day, now, veg):
 	#get datetime
 	month = now.month
 	year = now.year
@@ -81,7 +81,7 @@ def fetch_menu(hall, day, now):
 	response = requests.get(BASE_URL, params=params, timeout=15)
 	response.raise_for_status()
 	print(f"{GREEN}Data received\n {RESET} Parsing Data\n")
-	return parse_menu(response.text)
+	return parse_menu(response.text, veg)
 
 
 def display_menu(hall, meal, menu, day, now):
@@ -119,13 +119,13 @@ def main():
 		choices=["breakfast", "lunch", "dinner"]
 	)
 	parser.add_argument("-day", "--day", type=int, default="-1", choices=range(1, 32), help="Day in this week: usage: -d <int>")
-	
+	parser.add_argument("-v", "--v", type=int, default="1", choices=range(0, 2), help="usage: -v <0 for not veggie>")
 
 	args = parser.parse_args()
 
 	try:
 		now = datetime.now()
-		menu = fetch_menu(args.hall, args.day, now)
+		menu = fetch_menu(args.hall, args.day, now, args.v)
 		display_menu(args.hall, args.meal, menu, args.day, now)
 		#insert space between finish and prompt
 		print("\n", "=" * 40, "\n" * 4)
